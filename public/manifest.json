@@ -1,7 +1,22 @@
 {
-  "short_name": "VideoDownloader Pro",
-  "name": "VideoDownloader Pro - Professional Video Downloader",
+  "short_name": "Filta",
+  "name": "Filta - Professional Video Downloader",
   "icons": [
+    {
+      "src": "filta-favicon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "filta-logo-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "filta-logo-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    },
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",

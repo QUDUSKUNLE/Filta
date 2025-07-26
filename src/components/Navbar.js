@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Download, Menu, X } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import styled from 'styled-components';
 import { useUser } from '../contexts/UserContext';
+import FiltaLogo from './FiltaLogo';
 
 const Nav = styled.nav`
   background: rgba(255, 255, 255, 0.95);
@@ -97,9 +98,65 @@ const ButtonGroup = styled.div`
   }
 `;
 
+const UserMenu = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border-radius: 25px;
+  font-weight: 500;
+  color: #333;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+  }
+`;
+
+const LogoutButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: 1px solid #dc3545;
+  border-radius: 8px;
+  color: #dc3545;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #dc3545;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+  }
+`;
+
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { resetTrial, expireTrial } = useUser();
+  const { 
+    resetTrial, 
+    expireTrial, 
+    isAuthenticated, 
+    user, 
+    showAuthModal, 
+    logout 
+  } = useUser();
+
+  console.log('Navbar render:', { isAuthenticated, showAuthModal: typeof showAuthModal });
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -117,8 +174,20 @@ function Navbar() {
     closeMenu();
   };
 
-  const handleAuth = (type) => {
-    alert(`${type} functionality would be implemented here`);
+  const handleLogin = () => {
+    console.log('Login button clicked, showAuthModal:', showAuthModal);
+    showAuthModal('login');
+    closeMenu();
+  };
+
+  const handleSignup = () => {
+    console.log('Signup button clicked, showAuthModal:', showAuthModal);
+    showAuthModal('signup');
+    closeMenu();
+  };
+
+  const handleLogout = () => {
+    logout();
     closeMenu();
   };
 
@@ -126,7 +195,7 @@ function Navbar() {
     <Nav>
       <NavContainer>
         <Brand>
-          <Download size={24} />
+          <FiltaLogo size={28} />
           Filta
         </Brand>
         
@@ -157,18 +226,34 @@ function Navbar() {
             >
               Expire
             </button>
-            <button 
-              className="btn btn-outline"
-              onClick={() => handleAuth('Login')}
-            >
-              Login
-            </button>
-            <button 
-              className="btn btn-primary"
-              onClick={() => handleAuth('Sign Up')}
-            >
-              Sign Up
-            </button>
+            
+            {isAuthenticated ? (
+              <UserMenu>
+                <UserInfo>
+                  <User size={18} />
+                  {user?.name || user?.email || 'User'}
+                </UserInfo>
+                <LogoutButton onClick={handleLogout}>
+                  <LogOut size={16} />
+                  Logout
+                </LogoutButton>
+              </UserMenu>
+            ) : (
+              <>
+                <button 
+                  className="btn btn-outline"
+                  onClick={handleLogin}
+                >
+                  Login
+                </button>
+                <button 
+                  className="btn btn-primary"
+                  onClick={handleSignup}
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
           </ButtonGroup>
         </NavMenu>
 

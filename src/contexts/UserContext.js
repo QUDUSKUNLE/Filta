@@ -2,6 +2,17 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 const UserContext = createContext();
 
+function getDefaultDownloadPath() {
+  const userAgent = navigator.userAgent;
+  if (userAgent.includes('Mac')) {
+    return '/Users/Downloads';
+  } else if (userAgent.includes('Windows')) {
+    return 'C:\\Users\\Downloads';
+  } else {
+    return '/home/Downloads';
+  }
+}
+
 const initialState = {
   trialStartDate: localStorage.getItem('trialStartDate') || new Date().toISOString(),
   trialDaysRemaining: 7,
@@ -15,21 +26,17 @@ const initialState = {
   selectedPlan: null,
   isDownloading: false,
   downloadProgress: 0,
-  saveLocation: localStorage.getItem('saveLocation') || getDefaultDownloadPath()
+  saveLocation: localStorage.getItem('saveLocation') || getDefaultDownloadPath(),
+  // Authentication state
+  isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
+  user: JSON.parse(localStorage.getItem('user') || 'null'),
+  showAuthModal: false,
+  authModalType: null // 'login' or 'signup'
 };
 
-function getDefaultDownloadPath() {
-  const userAgent = navigator.userAgent;
-  if (userAgent.includes('Mac')) {
-    return '/Users/Downloads';
-  } else if (userAgent.includes('Windows')) {
-    return 'C:\\Users\\Downloads';
-  } else {
-    return '/home/Downloads';
-  }
-}
-
 function userReducer(state, action) {
+  console.log('UserReducer action:', action.type, action.payload);
+  
   switch (action.type) {
     case 'UPDATE_TRIAL_STATUS':
       return {
@@ -135,6 +142,44 @@ function userReducer(state, action) {
         trialModalDismissed: false,
         showTrialExpiredModal: false
       };
+
+    // Authentication actions
+    case 'LOGIN':
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify(action.payload));
+      return {
+        ...state,
+        isAuthenticated: true,
+        user: action.payload,
+        showAuthModal: false,
+        authModalType: null
+      };
+
+    case 'LOGOUT':
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      return {
+        ...state,
+        isAuthenticated: false,
+        user: null,
+        showAuthModal: false,
+        authModalType: null
+      };
+
+    case 'SHOW_AUTH_MODAL':
+      console.log('SHOW_AUTH_MODAL reducer case hit with payload:', action.payload);
+      return {
+        ...state,
+        showAuthModal: true,
+        authModalType: action.payload // 'login' or 'signup'
+      };
+
+    case 'HIDE_AUTH_MODAL':
+      return {
+        ...state,
+        showAuthModal: false,
+        authModalType: null
+      };
     
     default:
       return state;
@@ -188,7 +233,15 @@ export function UserProvider({ children }) {
       dispatch({ type: 'SET_DOWNLOAD_PROGRESS', payload: { isDownloading, progress } }),
     setSaveLocation: (location) => dispatch({ type: 'SET_SAVE_LOCATION', payload: location }),
     resetTrial: () => dispatch({ type: 'RESET_TRIAL' }),
-    expireTrial: () => dispatch({ type: 'EXPIRE_TRIAL' })
+    expireTrial: () => dispatch({ type: 'EXPIRE_TRIAL' }),
+    // Authentication actions
+    login: (user) => dispatch({ type: 'LOGIN', payload: user }),
+    logout: () => dispatch({ type: 'LOGOUT' }),
+    showAuthModal: (type) => {
+      console.log('showAuthModal action called with type:', type);
+      dispatch({ type: 'SHOW_AUTH_MODAL', payload: type });
+    },
+    hideAuthModal: () => dispatch({ type: 'HIDE_AUTH_MODAL' })
   };
 
   return (

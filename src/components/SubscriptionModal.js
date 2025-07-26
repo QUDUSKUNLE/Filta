@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, CreditCard } from 'lucide-react';
+import { X, Check, CreditCard, Shield, Lock } from 'lucide-react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -95,10 +95,122 @@ const PlanFeature = styled.li`
   color: #666;
 `;
 
+const PaymentSection = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const SectionTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const SupportedCards = styled.div`
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+`;
+
+const CardIcon = styled.div`
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &.active {
+    border-color: #667eea;
+    background: #f0f4ff;
+  }
+
+  img {
+    height: 24px;
+    width: auto;
+    max-width: 100%;
+  }
+
+  .card-name {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #666;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+`;
+
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+`;
+
+const FormGroup = styled.div`
+  position: relative;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    &.error {
+      border-color: #dc3545;
+    }
+
+    &.valid {
+      border-color: #28a745;
+    }
+  }
+`;
+
+const CardNumberGroup = styled(FormGroup)`
+  .card-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .detected-card {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 24px;
+    width: auto;
+  }
 `;
 
 const FormRow = styled.div`
@@ -111,6 +223,23 @@ const FormRow = styled.div`
   }
 `;
 
+const SecurityInfo = styled.div`
+  background: #e8f5e8;
+  border: 1px solid #28a745;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: #155724;
+
+  .security-icon {
+    color: #28a745;
+  }
+`;
+
 const LoadingSpinner = styled(motion.div)`
   display: inline-block;
   width: 20px;
@@ -119,6 +248,39 @@ const LoadingSpinner = styled(motion.div)`
   border-radius: 50%;
   border-top-color: transparent;
 `;
+
+const ErrorMessage = styled.div`
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+`;
+
+// Card type detection and validation
+const cardTypes = {
+  visa: {
+    name: 'Visa',
+    pattern: /^4/,
+    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzE0MzQ4NyIvPgo8cGF0aCBkPSJNMTYuNzUgN0gxNC4yNUwxMi41IDE3SDE1TDE2Ljc1IDdaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjMuMjUgN0gyMC43NUwxOSAxN0gyMS41TDIzLjI1IDdaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K'
+  },
+  mastercard: {
+    name: 'Mastercard',
+    pattern: /^5[1-5]/,
+    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iI0VCMDAxQiIvPgo8Y2lyY2xlIGN4PSIxNSIgY3k9IjEyIiByPSI2IiBmaWxsPSIjRkY1RjAwIi8+CjxjaXJjbGUgY3g9IjI1IiBjeT0iMTIiIHI9IjYiIGZpbGw9IiNGRkY1RjAiLz4KPC9zdmc+'
+  },
+  amex: {
+    name: 'American Express',
+    pattern: /^3[47]/,
+    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwNkZDRiIvPgo8dGV4dCB4PSIyMCIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkFNRVg8L3RleHQ+Cjwvc3ZnPg=='
+  },
+  discover: {
+    name: 'Discover',
+    pattern: /^6(?:011|5)/,
+    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iI0ZGNjAwMCIvPgo8dGV4dCB4PSIyMCIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI2IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkRJU0NPVKVSPC90ZXh0Pgo8L3N2Zz4='
+  }
+};
 
 function SubscriptionModal() {
   const { 
@@ -135,10 +297,61 @@ function SubscriptionModal() {
     cvv: ''
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [detectedCardType, setDetectedCardType] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
+
+  const detectCardType = (cardNumber) => {
+    const cleanNumber = cardNumber.replace(/\s/g, '');
+    for (const [key, card] of Object.entries(cardTypes)) {
+      if (card.pattern.test(cleanNumber)) {
+        return key;
+      }
+    }
+    return null;
+  };
+
+  const validateCardNumber = (cardNumber) => {
+    const cleanNumber = cardNumber.replace(/\s/g, '');
+    
+    // Luhn algorithm for card validation
+    let sum = 0;
+    let isEven = false;
+    
+    for (let i = cleanNumber.length - 1; i >= 0; i--) {
+      let digit = parseInt(cleanNumber.charAt(i), 10);
+      
+      if (isEven) {
+        digit *= 2;
+        if (digit > 9) {
+          digit -= 9;
+        }
+      }
+      
+      sum += digit;
+      isEven = !isEven;
+    }
+    
+    return sum % 10 === 0 && cleanNumber.length >= 13;
+  };
+
+  const validateExpiry = (expiry) => {
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) return false;
+    
+    const [month, year] = expiry.split('/').map(num => parseInt(num, 10));
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear() % 100;
+    const currentMonth = currentDate.getMonth() + 1;
+    
+    if (month < 1 || month > 12) return false;
+    if (year < currentYear || (year === currentYear && month < currentMonth)) return false;
+    
+    return true;
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     let formattedValue = value;
+    const newErrors = { ...validationErrors };
 
     // Format card number
     if (name === 'cardNumber') {
@@ -148,6 +361,19 @@ function SubscriptionModal() {
         .replace(/(.{4})/g, '$1 ')
         .trim()
         .substring(0, 19);
+      
+      const cardType = detectCardType(formattedValue);
+      setDetectedCardType(cardType);
+      
+      // Validate card number
+      if (formattedValue.length > 0) {
+        const isValid = validateCardNumber(formattedValue);
+        if (!isValid && formattedValue.replace(/\s/g, '').length >= 13) {
+          newErrors.cardNumber = 'Invalid card number';
+        } else {
+          delete newErrors.cardNumber;
+        }
+      }
     }
 
     // Format expiry date
@@ -156,13 +382,42 @@ function SubscriptionModal() {
         .replace(/\D/g, '')
         .replace(/(\d{2})(\d)/, '$1/$2')
         .substring(0, 5);
+      
+      // Validate expiry
+      if (formattedValue.length === 5) {
+        const isValid = validateExpiry(formattedValue);
+        if (!isValid) {
+          newErrors.expiry = 'Invalid or expired date';
+        } else {
+          delete newErrors.expiry;
+        }
+      }
     }
 
     // Format CVV
     if (name === 'cvv') {
-      formattedValue = value.replace(/\D/g, '').substring(0, 3);
+      const maxLength = detectedCardType === 'amex' ? 4 : 3;
+      formattedValue = value.replace(/\D/g, '').substring(0, maxLength);
+      
+      // Validate CVV
+      if (formattedValue.length > 0 && formattedValue.length < maxLength) {
+        newErrors.cvv = `CVV must be ${maxLength} digits`;
+      } else {
+        delete newErrors.cvv;
+      }
     }
 
+    // Email validation
+    if (name === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (value.length > 0 && !emailRegex.test(value)) {
+        newErrors.email = 'Invalid email address';
+      } else {
+        delete newErrors.email;
+      }
+    }
+
+    setValidationErrors(newErrors);
     setFormData(prev => ({
       ...prev,
       [name]: formattedValue
@@ -178,16 +433,20 @@ function SubscriptionModal() {
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
+    // Check for validation errors
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error('Please fix the errors in the form');
       return;
     }
 
-    // Card number validation (basic length check)
-    if (formData.cardNumber.replace(/\s/g, '').length < 16) {
+    // Final validations
+    if (!validateCardNumber(formData.cardNumber)) {
       toast.error('Please enter a valid card number');
+      return;
+    }
+
+    if (!validateExpiry(formData.expiry)) {
+      toast.error('Please enter a valid expiry date');
       return;
     }
 
@@ -208,6 +467,8 @@ function SubscriptionModal() {
         expiry: '',
         cvv: ''
       });
+      setDetectedCardType(null);
+      setValidationErrors({});
       
     } catch (error) {
       toast.error('Payment failed. Please try again.');
@@ -225,6 +486,8 @@ function SubscriptionModal() {
         expiry: '',
         cvv: ''
       });
+      setDetectedCardType(null);
+      setValidationErrors({});
     }
   };
 
@@ -243,114 +506,171 @@ function SubscriptionModal() {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             onClick={(e) => e.stopPropagation()}
           >
-          <CloseButton onClick={handleClose} disabled={isProcessing}>
-            <X size={24} />
-          </CloseButton>
+            <CloseButton onClick={handleClose} disabled={isProcessing}>
+              <X size={24} />
+            </CloseButton>
 
-          <ModalTitle>Complete Your Subscription</ModalTitle>
+            <ModalTitle>Complete Your Subscription</ModalTitle>
 
-          <SelectedPlan>
-            <PlanName>{selectedPlan.title} Plan</PlanName>
-            <PlanPrice>{selectedPlan.price}{selectedPlan.period}</PlanPrice>
-            {selectedPlan.savings && (
-              <div style={{ color: '#10b981', fontWeight: '600', fontSize: '0.9rem' }}>
-                {selectedPlan.savings}
-              </div>
-            )}
-            <PlanFeatures>
-              {selectedPlan.features?.filter(f => f.included).map((feature, index) => (
-                <PlanFeature key={index}>
-                  <Check size={16} color="#10b981" />
-                  {feature.text}
-                </PlanFeature>
-              ))}
-            </PlanFeatures>
-          </SelectedPlan>
-
-          <Form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                className="form-input"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="your@email.com"
-                required
-                disabled={isProcessing}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="cardNumber">Card Number</label>
-              <input
-                type="text"
-                id="cardNumber"
-                name="cardNumber"
-                className="form-input"
-                value={formData.cardNumber}
-                onChange={handleInputChange}
-                placeholder="1234 5678 9012 3456"
-                required
-                disabled={isProcessing}
-              />
-            </div>
-
-            <FormRow>
-              <div className="form-group">
-                <label htmlFor="expiry">Expiry Date</label>
-                <input
-                  type="text"
-                  id="expiry"
-                  name="expiry"
-                  className="form-input"
-                  value={formData.expiry}
-                  onChange={handleInputChange}
-                  placeholder="MM/YY"
-                  required
-                  disabled={isProcessing}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="cvv">CVV</label>
-                <input
-                  type="text"
-                  id="cvv"
-                  name="cvv"
-                  className="form-input"
-                  value={formData.cvv}
-                  onChange={handleInputChange}
-                  placeholder="123"
-                  required
-                  disabled={isProcessing}
-                />
-              </div>
-            </FormRow>
-
-            <button 
-              type="submit" 
-              className="btn btn-primary btn-full btn-large"
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <>
-                  <LoadingSpinner
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <CreditCard size={20} />
-                  Subscribe Now
-                </>
+            <SelectedPlan>
+              <PlanName>{selectedPlan.title} Plan</PlanName>
+              <PlanPrice>{selectedPlan.price}{selectedPlan.period}</PlanPrice>
+              {selectedPlan.savings && (
+                <div style={{ color: '#10b981', fontWeight: '600', fontSize: '0.9rem' }}>
+                  {selectedPlan.savings}
+                </div>
               )}
-            </button>
-          </Form>
-        </ModalContent>
+              <PlanFeatures>
+                {selectedPlan.features?.filter(f => f.included).map((feature, index) => (
+                  <PlanFeature key={index}>
+                    <Check size={16} color="#10b981" />
+                    {feature.text}
+                  </PlanFeature>
+                ))}
+              </PlanFeatures>
+            </SelectedPlan>
+
+            <PaymentSection>
+              <SectionTitle>
+                <CreditCard size={18} />
+                Payment Information
+              </SectionTitle>
+
+              <SupportedCards>
+                <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#333', marginBottom: '0.5rem' }}>
+                  We Accept
+                </div>
+                <CardsGrid>
+                  {Object.entries(cardTypes).map(([key, card]) => (
+                    <CardIcon 
+                      key={key} 
+                      className={detectedCardType === key ? 'active' : ''}
+                      title={card.name}
+                    >
+                      <div>
+                        <img src={card.icon} alt={card.name} />
+                        <div className="card-name">{card.name}</div>
+                      </div>
+                    </CardIcon>
+                  ))}
+                </CardsGrid>
+              </SupportedCards>
+
+              <SecurityInfo>
+                <Shield className="security-icon" size={20} />
+                <div>
+                  <strong>Secure Payment:</strong> Your payment information is encrypted and secure. We never store your card details.
+                </div>
+              </SecurityInfo>
+            </PaymentSection>
+
+            <Form onSubmit={handleSubmit}>
+              <FormGroup>
+                <label htmlFor="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  className={`form-input ${validationErrors.email ? 'error' : ''}`}
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="your@email.com"
+                  required
+                  disabled={isProcessing}
+                />
+                {validationErrors.email && (
+                  <ErrorMessage>{validationErrors.email}</ErrorMessage>
+                )}
+              </FormGroup>
+
+              <CardNumberGroup>
+                <label htmlFor="cardNumber">Card Number</label>
+                <div className="card-input-wrapper">
+                  <input
+                    type="text"
+                    id="cardNumber"
+                    name="cardNumber"
+                    className={`form-input ${validationErrors.cardNumber ? 'error' : detectedCardType ? 'valid' : ''}`}
+                    value={formData.cardNumber}
+                    onChange={handleInputChange}
+                    placeholder="1234 5678 9012 3456"
+                    required
+                    disabled={isProcessing}
+                  />
+                  {detectedCardType && (
+                    <img 
+                      src={cardTypes[detectedCardType].icon} 
+                      alt={cardTypes[detectedCardType].name}
+                      className="detected-card"
+                    />
+                  )}
+                </div>
+                {validationErrors.cardNumber && (
+                  <ErrorMessage>{validationErrors.cardNumber}</ErrorMessage>
+                )}
+              </CardNumberGroup>
+
+              <FormRow>
+                <FormGroup>
+                  <label htmlFor="expiry">Expiry Date</label>
+                  <input
+                    type="text"
+                    id="expiry"
+                    name="expiry"
+                    className={`form-input ${validationErrors.expiry ? 'error' : ''}`}
+                    value={formData.expiry}
+                    onChange={handleInputChange}
+                    placeholder="MM/YY"
+                    required
+                    disabled={isProcessing}
+                  />
+                  {validationErrors.expiry && (
+                    <ErrorMessage>{validationErrors.expiry}</ErrorMessage>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <label htmlFor="cvv">
+                    CVV {detectedCardType === 'amex' ? '(4 digits)' : '(3 digits)'}
+                  </label>
+                  <input
+                    type="text"
+                    id="cvv"
+                    name="cvv"
+                    className={`form-input ${validationErrors.cvv ? 'error' : ''}`}
+                    value={formData.cvv}
+                    onChange={handleInputChange}
+                    placeholder={detectedCardType === 'amex' ? '1234' : '123'}
+                    required
+                    disabled={isProcessing}
+                  />
+                  {validationErrors.cvv && (
+                    <ErrorMessage>{validationErrors.cvv}</ErrorMessage>
+                  )}
+                </FormGroup>
+              </FormRow>
+
+              <button 
+                type="submit" 
+                className="btn btn-primary btn-full btn-large"
+                disabled={isProcessing || Object.keys(validationErrors).length > 0}
+              >
+                {isProcessing ? (
+                  <>
+                    <LoadingSpinner
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                    Processing Payment...
+                  </>
+                ) : (
+                  <>
+                    <Lock size={20} />
+                    Subscribe Securely
+                  </>
+                )}
+              </button>
+            </Form>
+          </ModalContent>
         </ModalOverlay>
       )}
     </AnimatePresence>
