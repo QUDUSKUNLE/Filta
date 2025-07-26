@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filta Downloader</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-download"></i>
+                Filta
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <button id="loginBtn" class="btn btn-outline">Login</button>
+                <button id="signupBtn" class="btn btn-primary">Sign Up</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Download Videos Instantly</h1>
+                <p>Fast, reliable video downloads from any URL. Start your 7-day free trial today!</p>
+                
+                <!-- Trial Status -->
+                <div id="trialStatus" class="trial-status">
+                    <i class="fas fa-clock"></i>
+                    <span id="trialDays">7 days</span> remaining in your free trial
+                </div>
+
+                <!-- Download Form -->
+                <div class="download-section">
+                    <div class="url-input-group">
+                        <input type="url" id="videoUrl" placeholder="Paste video URL here..." class="url-input">
+                        <button id="downloadBtn" class="btn btn-primary">
+                            <i class="fas fa-download"></i>
+                            Download
+                        </button>
+                    </div>
+                    
+                    <!-- Save Location -->
+                    <div class="save-location">
+                        <label for="saveLocation">Save to:</label>
+                        <div class="location-input-group">
+                            <input type="text" id="saveLocation" placeholder="Choose download folder..." readonly>
+                            <button id="browseBtn" class="btn btn-secondary">
+                                <i class="fas fa-folder"></i>
+                                Browse
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Progress -->
+                <div id="downloadProgress" class="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">Downloading... 0%</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2>Why Choose Filta?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Lightning Fast</h3>
+                    <p>Download videos at maximum speed with our optimized servers</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Secure & Safe</h3>
+                    <p>Your downloads are protected with enterprise-grade security</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Multi-Platform</h3>
+                    <p>Works seamlessly across all devices and platforms</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-hd-video"></i>
+                    <h3>High Quality</h3>
+                    <p>Download in multiple formats and resolutions up to 4K</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2>Choose Your Plan</h2>
+            <div class="pricing-grid">
+                <!-- Free Trial -->
+                <div class="pricing-card trial">
+                    <div class="card-header">
+                        <h3>Free Trial</h3>
+                        <div class="price">$0<span>/7 days</span></div>
+                    </div>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check"></i> 10 downloads per day</li>
+                        <li><i class="fas fa-check"></i> Standard quality</li>
+                        <li><i class="fas fa-check"></i> Basic support</li>
+                        <li><i class="fas fa-times"></i> No HD downloads</li>
+                    </ul>
+                    <button class="btn btn-outline" disabled>Current Plan</button>
+                </div>
+
+                <!-- Monthly -->
+                <div class="pricing-card popular">
+                    <div class="popular-badge">Most Popular</div>
+                    <div class="card-header">
+                        <h3>Monthly</h3>
+                        <div class="price">$9.99<span>/month</span></div>
+                    </div>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check"></i> Unlimited downloads</li>
+                        <li><i class="fas fa-check"></i> HD & 4K quality</li>
+                        <li><i class="fas fa-check"></i> Priority support</li>
+                        <li><i class="fas fa-check"></i> Batch downloads</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="selectPlan('monthly')">Choose Monthly</button>
+                </div>
+
+                <!-- Yearly -->
+                <div class="pricing-card">
+                    <div class="card-header">
+                        <h3>Yearly</h3>
+                        <div class="price">$99.99<span>/year</span></div>
+                        <div class="savings">Save 17%</div>
+                    </div>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check"></i> Everything in Monthly</li>
+                        <li><i class="fas fa-check"></i> Advanced analytics</li>
+                        <li><i class="fas fa-check"></i> API access</li>
+                        <li><i class="fas fa-check"></i> Custom integrations</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="selectPlan('yearly')">Choose Yearly</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subscription Modal -->
+    <div id="subscriptionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Complete Your Subscription</h2>
+            <div id="selectedPlan" class="selected-plan"></div>
+            
+            <form id="subscriptionForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cardNumber">Card Number</label>
+                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expiry">Expiry Date</label>
+                        <input type="text" id="expiry" placeholder="MM/YY" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv">CVV</label>
+                        <input type="text" id="cvv" placeholder="123" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Subscribe Now</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Trial Expired Modal -->
+    <div id="trialExpiredModal" class="modal">
+        <div class="modal-content">
+            <h2>Trial Period Expired</h2>
+            <p>Your 7-day free trial has ended. Please subscribe to continue downloading videos.</p>
+            <button class="btn btn-primary" onclick="showPricing()">View Plans</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
