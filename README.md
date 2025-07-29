@@ -1,4 +1,4 @@
-# VideoDownloader Pro - React Application
+# Filta
 
 A professional, responsive React web application for downloading videos with subscription-based features.
 

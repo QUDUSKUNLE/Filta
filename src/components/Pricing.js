@@ -139,7 +139,7 @@ const plans = [
     title: 'Monthly',
     price: 'N4,000',
     period: '/month',
-    popular: true,
+    popular: 'true',
     features: [
       { text: 'Unlimited downloads', included: true },
       { text: 'HD & 4K quality', included: true },
